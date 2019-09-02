@@ -2,7 +2,7 @@
 #include<linux/module.h>
 #include<linux/fs.h>
 #include<linux/cdev.h>
-
+#include<linux/uaccess.h>
 
 #define MAJ 200
 #define MIN 0
@@ -10,7 +10,7 @@
 
 dev_t deviceid=MKDEV(MAJ,MIN);
 static struct cdev* chdrv_interface_cdev;
-
+char pribuf[20];
 
 
 int chdrv_open(struct inode *chdrv_inode, struct file * chdrv_file)
@@ -21,15 +21,26 @@ int chdrv_open(struct inode *chdrv_inode, struct file * chdrv_file)
 
 ssize_t chdrv_write(struct file * chdrv_file, const char* buf, size_t size, loff_t* offset)
 {
-	pr_info("chdrv_write called\n");
+	
+	pr_info("chdrv_write called");
+	
+	copy_from_user(pribuf,buf,size);
+
+	pr_info("value written on private buffer is %s",pribuf);
+
+
 	return size;
 }
 
 
 
-ssize_t chdrv_read(struct file * chdrv_file, char __user* buf, size_t size, loff_t * offset)
+
+ssize_t chdrv_read(struct file * chdrv_file, char* buf, size_t size, loff_t * offset)
 {
-	pr_info("chdrv_read called\n");
+	pr_info("chdrv_read called");
+
+	copy_to_user(buf,pribuf,sizeof(pribuf));
+
 	return 0;
 }
 
